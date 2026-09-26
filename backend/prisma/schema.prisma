@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MANAGER
+  WAREHOUSE_STAFF
+}
+
+enum DocumentType {
+  receipt
+  delivery
+  transfer
+  adjustment
+}
+
+enum DocumentStatus {
+  Draft
+  Waiting
+  Ready
+  Done
+  Canceled
+}
+
+model User {
+  id                     String                  @id @default(cuid())
+  name                   String
+  email                  String                  @unique
+  passwordHash           String
+  role                   UserRole                @default(WAREHOUSE_STAFF)
+  avatarInitials         String                  @default("SU")
+  emailVerifiedAt        DateTime?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  refreshTokens          RefreshToken[]
+  otps                   OTP[]
+  emailVerificationTokens EmailVerificationToken[]
+  ledgerEntries          LedgerEntry[]
+  notificationPreference NotificationPreference?
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model OTP {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  emailNotifications Boolean  @default(true)
+  lowStockEmails     Boolean  @default(true)
+  operationEmails    Boolean  @default(true)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt          DateTime @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Warehouse {
+  id                  String               @id @default(cuid())
+  name                String
+  code                String               @unique
+  location            String
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  stockLevels         StockLevel[]
+  locations           Location[]
+  lowStockAlertStates LowStockAlertState[]
+  docsFrom            Document[]           @relation("WarehouseDocs")
+  docsTo              Document[]           @relation("DestinationDocs")
+}
+
+model Location {
+  id            String        @id @default(cuid())
+  name          String
+  warehouseId   String
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  stockLevels   StockLevel[]
+  ledgerEntries LedgerEntry[]
+
+  @@unique([warehouseId, name])
+}
+
+model Product {
+  id                  String               @id @default(cuid())
+  name                String
+  sku                 String               @unique
+  categoryId          String
+  category            Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  unitOfMeasure       String
+  reorderPoint        Int                  @default(0)
+  totalStock          Int                  @default(0)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  stockLevels         StockLevel[]
+  documentLines       DocumentLine[]
+  ledgerEntries       LedgerEntry[]
+  lowStockAlertStates LowStockAlertState[]
+
+  @@index([sku])
+}
+
+model StockLevel {
+  id          String   @id @default(cuid())
+  productId   String
+  warehouseId String
+  locationId  String?
+  quantity    Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  location  Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, warehouseId, locationId])
+  @@index([productId])
+  @@index([warehouseId])
+}
+
+model LowStockAlertState {
+  id          String    @id @default(cuid())
+  productId   String
+  warehouseId String
+  active      Boolean   @default(false)
+  alertedAt   DateTime?
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, warehouseId])
+}
+
+model Document {
+  id                     String         @id @default(cuid())
+  reference              String         @unique
+  type                   DocumentType
+  status                 DocumentStatus @default(Draft)
+  warehouseId            String
+  destinationWarehouseId String?
+  partner                String?
+  note                   String?
+  scheduledDate          DateTime
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  warehouse              Warehouse      @relation("WarehouseDocs", fields: [warehouseId], references: [id], onDelete: Restrict)
+  destinationWarehouse   Warehouse?     @relation("DestinationDocs", fields: [destinationWarehouseId], references: [id], onDelete: SetNull)
+  lines                  DocumentLine[]
+  ledgerEntries          LedgerEntry[]
+
+  @@index([type, status])
+  @@index([warehouseId])
+}
+
+model DocumentLine {
+  id                    String   @id @default(cuid())
+  documentId            String
+  productId             String
+  quantity              Int
+  sourceLocationId      String?
+  destinationLocationId String?
+  document              Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  product               Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([documentId])
+  @@index([productId])
+}
+
+model LedgerEntry {
+  id                String    @id @default(cuid())
+  documentId        String
+  documentReference String
+  productId         String
+  warehouseId       String
+  locationId        String?
+  quantityChange    Int
+  reason            String
+  timestamp         DateTime  @default(now())
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  document          Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  product           Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  location          Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([warehouseId])
+}
