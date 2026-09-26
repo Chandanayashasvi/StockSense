@@ -1,0 +1,15 @@
+{
+  "name": "stocksense-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm --prefix backend run dev",
+    "build": "npm --prefix backend run build && npm --prefix stocksense run build",
+    "test": "npm --prefix backend run test",
+    "lint": "npm --prefix backend run lint && npm --prefix stocksense run lint",
+    "seed": "npm --prefix backend run seed",
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  }
+}
