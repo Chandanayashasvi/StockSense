@@ -22,7 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({ label, error, hint, id
           id={inputId}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-          className={`w-full rounded-md border px-3 py-2 text-sm text-ink-900 placeholder:text-steel-400 outline-none transition-colors focus:ring-2 focus:ring-amber-500/30 ${
+          className={`w-full rounded-md border px-3 py-2 text-sm text-ink-900 placeholder:text-copy-placeholder outline-none transition-colors focus:ring-2 focus:ring-amber-500/30 ${
             error ? "border-signal-red focus:border-signal-red" : "border-steel-200 focus:border-ink-700"
           } ${endAdornment ? "pr-10" : ""} ${className}`}
           {...rest}

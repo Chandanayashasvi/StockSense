@@ -138,6 +138,7 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
   if (USE_MOCKS) {
     const stats: DashboardStats = {
       totalProducts: mock.products.length,
+      totalStock: mock.products.reduce((total, product) => total + product.totalStock, 0),
       lowStockCount: mock.products.filter((p) => p.totalStock > 0 && p.totalStock <= p.reorderPoint).length,
       outOfStockCount: mock.products.filter((p) => p.totalStock === 0).length,
       pendingReceipts: mock.documents.filter((d) => d.type === "receipt" && d.status !== "Done" && d.status !== "Canceled").length,

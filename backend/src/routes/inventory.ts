@@ -388,12 +388,13 @@ router.get('/dashboard/stats', requireAuth, async (_req, res, next) => {
     const stats = await prisma.$transaction(async (tx: any) => {
       const totalProducts = await tx.product.count();
       const stockThresholds = await tx.product.findMany({ select: { totalStock: true, reorderPoint: true } });
+      const totalStock = stockThresholds.reduce((total: number, product: { totalStock: number }) => total + product.totalStock, 0);
       const lowStockCount = stockThresholds.filter((product: { totalStock: number; reorderPoint: number }) => product.totalStock > 0 && product.totalStock <= product.reorderPoint).length;
       const outOfStockCount = stockThresholds.filter((product: { totalStock: number }) => product.totalStock === 0).length;
       const pendingReceipts = await tx.document.count({ where: { type: 'receipt', status: { notIn: ['Done', 'Canceled'] } } });
       const pendingDeliveries = await tx.document.count({ where: { type: 'delivery', status: { notIn: ['Done', 'Canceled'] } } });
       const scheduledTransfers = await tx.document.count({ where: { type: 'transfer', status: { notIn: ['Done', 'Canceled'] } } });
-      return { totalProducts, lowStockCount, outOfStockCount, pendingReceipts, pendingDeliveries, scheduledTransfers };
+      return { totalProducts, totalStock, lowStockCount, outOfStockCount, pendingReceipts, pendingDeliveries, scheduledTransfers };
     });
     return res.json(stats);
   } catch (error) {

@@ -55,7 +55,7 @@ export default function Profile() {
       <div className="max-w-lg space-y-4">
         <Card className="p-5">
           <div className="flex items-center gap-3 mb-5">
-            <div className="h-12 w-12 rounded-full bg-ink-800 text-white font-semibold flex items-center justify-center">{user?.avatarInitials}</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-icon-container font-semibold text-icon-blue">{user?.avatarInitials}</div>
             <div>
               <p className="font-medium text-ink-900">{user?.name}</p>
               <p className="text-sm text-steel-500">{user?.role}</p>

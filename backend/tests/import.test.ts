@@ -1,8 +1,17 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import ExcelJS from 'exceljs';
 import { prisma } from '../src/config/prisma.js';
 import { app } from '../src/server.js';
+
+const { sendVerificationEmailMock } = vi.hoisted(() => ({
+  sendVerificationEmailMock: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('../src/services/emailService.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/services/emailService.js')>();
+  return { ...actual, sendEmailVerification: sendVerificationEmailMock };
+});
 
 describe('inventory import and notification preferences', () => {
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`.toUpperCase();
@@ -17,15 +26,23 @@ describe('inventory import and notification preferences', () => {
   let locationId = '';
 
   beforeAll(async () => {
-    const [category, warehouse, signup] = await Promise.all([
+    const [category, warehouse] = await Promise.all([
       prisma.category.create({ data: { name: categoryName } }),
       prisma.warehouse.create({ data: { name: `Import Warehouse ${suffix}`, code: warehouseCode, location: 'Test location' } }),
-      request(app).post('/api/auth/signup').send({ name: 'Import Test', email, password: 'Password123!' }),
     ]);
     categoryId = category.id;
     warehouseId = warehouse.id;
+
+    sendVerificationEmailMock.mockClear();
+    const signup = await request(app).post('/api/auth/signup').send({ name: 'Import Test', email, password: 'Password123!' });
     expect(signup.status).toBe(201);
-    token = signup.body.token;
+    const verificationUrl = (sendVerificationEmailMock.mock.calls[0] as [string, string])[1];
+    const verificationToken = new URL(verificationUrl).searchParams.get('token');
+    const verification = await request(app).post('/api/auth/verify-email').send({ token: verificationToken });
+    expect(verification.status).toBe(200);
+    const login = await request(app).post('/api/auth/login').send({ email, password: 'Password123!' });
+    expect(login.status).toBe(200);
+    token = login.body.token;
     const location = await prisma.location.create({ data: { name: 'Import QA Location', warehouseId } });
     locationId = location.id;
   });

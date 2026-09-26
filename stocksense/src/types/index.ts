@@ -84,6 +84,7 @@ export interface MoveLedgerEntry {
 
 export interface DashboardStats {
   totalProducts: number;
+  totalStock: number;
   lowStockCount: number;
   outOfStockCount: number;
   pendingReceipts: number;

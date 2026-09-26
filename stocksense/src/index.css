@@ -2,17 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+  --ss-background: #07111f;
+  --ss-sidebar: #08101c;
+  --ss-surface: #0d1726;
+  --ss-card: #101d2e;
+  --ss-card-raised: #142236;
+  --ss-border: #22324a;
+  --ss-blue: #3b82f6;
+  --ss-cyan: #22d3ee;
+  --ss-success: #4ade80;
+  --ss-warning: #fbbf24;
+  --ss-danger: #f87171;
+  --ss-text: #f8fafc;
+  --ss-text-secondary: #cbd5e1;
+  --ss-text-muted: #94a3b8;
+  --ss-text-placeholder: #64748b;
+}
+
 @layer base {
   html {
     @apply antialiased;
+    background: var(--ss-background);
   }
   body {
     @apply bg-steel-50 text-ink-900 font-sans;
+    background-color: var(--ss-background);
+    color: var(--ss-text);
   }
   :focus-visible {
-    outline: 2px solid #d97706;
+    outline: 2px solid var(--ss-cyan);
     outline-offset: 2px;
   }
+}
+
+.bg-white {
+  background-color: var(--ss-card);
+}
+
+.bg-white.rounded-full {
+  background-color: var(--ss-text);
+}
+
+.text-steel-300 {
+  color: var(--ss-text-secondary);
+}
+
+.text-slate-100 {
+  color: var(--ss-text);
+}
+
+.text-slate-300,
+.text-slate-400 {
+  color: var(--ss-text-secondary);
+}
+
+.text-slate-500 {
+  color: var(--ss-text-muted);
+}
+
+.text-emerald-400 {
+  color: var(--ss-success);
+}
+
+input,
+select,
+textarea {
+  color-scheme: dark;
 }
 
 @layer utilities {
@@ -21,7 +78,7 @@
     height: 8px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    background-color: var(--ss-border);
     border-radius: 8px;
   }
 }

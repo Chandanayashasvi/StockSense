@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "@/pages/auth/Login";
 import Signup from "@/pages/auth/Signup";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
+import VerifyEmail from "@/pages/auth/VerifyEmail";
 
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/products/Products";
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Authenticated */}
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

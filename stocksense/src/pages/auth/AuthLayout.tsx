@@ -5,9 +5,9 @@ import { ReactNode } from "react";
 export default function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-[44%] bg-ink-900 flex-col justify-between p-10 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-[44%] flex-col justify-between p-10 relative overflow-hidden" style={{ backgroundColor: "var(--ss-sidebar)" }}>
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-md bg-amber-500 flex items-center justify-center text-ink-950 font-bold">S</div>
+          <div className="h-9 w-9 rounded-md bg-brand-500 flex items-center justify-center text-white font-bold">S</div>
           <span className="text-white font-semibold text-lg">StockSense</span>
         </div>
         <div className="space-y-5 max-w-sm">

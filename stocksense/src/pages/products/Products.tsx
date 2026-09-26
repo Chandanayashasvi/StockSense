@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import AppShell from "@/components/layout/AppLayout";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -12,6 +12,7 @@ import Spinner from "@/components/ui/Spinner";
 import ErrorState from "@/components/ui/ErrorState";
 import EmptyState from "@/components/ui/EmptyState";
 import { StockBadge } from "@/components/ui/Badge";
+import InventoryIcon from "@/components/ui/InventoryIcon";
 import ProductFormModal from "./ProductFormModal";
 import { useAsync } from "@/hooks/useAsync";
 import { fetchProducts, fetchCategories } from "@/services/productService";
@@ -19,8 +20,9 @@ import { fetchLedger, fetchWarehouses } from "@/services/operationsService";
 import type { Product, Category, Warehouse } from "@/types";
 
 export default function Products() {
+  const [searchParams] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [warehouseFilter, setWarehouseFilter] = useState("");
   const [stockFilter, setStockFilter] = useState("");
@@ -31,6 +33,10 @@ export default function Products() {
   const categoriesQuery = useAsync<Category[]>(fetchCategories, []);
   const warehousesQuery = useAsync<Warehouse[]>(fetchWarehouses, []);
   const ledgerQuery = useAsync(fetchLedger, []);
+
+  useEffect(() => {
+    setSearch(searchParams.get("search") ?? "");
+  }, [searchParams]);
 
   const categoryMap = useMemo(() => new Map((categoriesQuery.data ?? []).map((c) => [c.id, c.name])), [categoriesQuery.data]);
 
@@ -45,7 +51,11 @@ export default function Products() {
     if (reorderFilter === "above") rows = rows.filter((p) => p.totalStock > p.reorderPoint);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      rows = rows.filter((p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+      rows = rows.filter((p) =>
+        p.name.toLowerCase().includes(q)
+        || p.sku.toLowerCase().includes(q)
+        || p.stockByLocation.some((level) => level.warehouseName?.toLowerCase().includes(q)),
+      );
     }
     return rows;
   }, [productsQuery.data, categoryFilter, warehouseFilter, stockFilter, reorderFilter, search]);
@@ -56,8 +66,8 @@ export default function Products() {
   );
 
   const columns: Column<Product>[] = [
-    { header: "Product", render: (p) => <span className="font-medium text-ink-900">{p.name}</span> },
-    { header: "SKU", render: (p) => <span className="font-mono text-xs">{p.sku}</span> },
+     { header: "Product", render: (p) => <span className="flex items-center gap-2.5"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-icon-container text-icon-blue"><InventoryIcon name="package" className="h-[18px] w-[18px]" /></span><span className="font-medium text-ink-900">{p.name}</span></span> },
+     { header: "SKU", render: (p) => <span className="flex items-center gap-1.5 font-mono text-xs"><InventoryIcon name="barcode" className="h-3.5 w-3.5 text-steel-500" />{p.sku}</span> },
     { header: "Category", render: (p) => categoryMap.get(p.categoryId) ?? "—" },
     { header: "Stock", render: (p) => <span className="font-mono">{p.totalStock} {p.unitOfMeasure}</span> },
     { header: "Status", render: (p) => <StockBadge quantity={p.totalStock} reorderPoint={p.reorderPoint} /> },
@@ -116,7 +126,7 @@ export default function Products() {
         </Card>
       </div>
 
-      <DetailDrawer open={!!selectedProduct} title={selectedProduct?.name ?? "Product details"} onClose={() => setSelectedProductId(null)}>
+      <DetailDrawer open={!!selectedProduct} title={selectedProduct?.name ?? "Product details"} icon={<InventoryIcon name="package" className="h-8 w-8" />} onClose={() => setSelectedProductId(null)}>
         {selectedProduct && (
           <div className="space-y-4">
             <div className="rounded-xl bg-steel-50 p-3">

@@ -17,12 +17,24 @@ import { initSockets } from './sockets/index.js';
 
 const app = express();
 const server = createServer(app);
+const localDevelopmentOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://127.0.0.1:5175',
+];
+const configuredFrontendOrigin = new URL(env.frontendUrl).origin;
+const allowedFrontendOrigins = process.env.NODE_ENV === 'production'
+  ? [configuredFrontendOrigin]
+  : [...new Set([configuredFrontendOrigin, ...localDevelopmentOrigins])];
 const io = new Server(server, {
-  cors: { origin: env.frontendUrl, methods: ['GET', 'POST'], credentials: true },
+  cors: { origin: allowedFrontendOrigins, methods: ['GET', 'POST'], credentials: true },
 });
 
 app.use(helmet());
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
+app.use(cors({ origin: allowedFrontendOrigins, credentials: true }));
 app.use(express.json());
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 1000, standardHeaders: true, legacyHeaders: false }));
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false }));

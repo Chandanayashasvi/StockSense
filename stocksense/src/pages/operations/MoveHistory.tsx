@@ -9,6 +9,7 @@ import DetailDrawer from "@/components/ui/DetailDrawer";
 import Spinner from "@/components/ui/Spinner";
 import ErrorState from "@/components/ui/ErrorState";
 import EmptyState from "@/components/ui/EmptyState";
+import InventoryIcon from "@/components/ui/InventoryIcon";
 import { useAsync } from "@/hooks/useAsync";
 import { useState } from "react";
 import { fetchLedger, fetchWarehouses } from "@/services/operationsService";
@@ -44,8 +45,8 @@ export default function MoveHistory() {
 
   const columns: Column<MoveLedgerEntry>[] = [
     { header: "Reference", render: (e) => <span className="font-mono text-xs font-medium">{e.documentReference}</span> },
-    { header: "Movement", render: (e) => <span className="capitalize">{e.movementType ?? (e.documentReference.includes("/IN/") ? "receipt" : e.documentReference.includes("/OUT/") ? "delivery" : e.documentReference.includes("/INT/") ? "transfer" : "adjustment")}</span> },
-    { header: "Product", render: (e) => productMap.get(e.productId)?.name ?? e.productId },
+    { header: "Movement", render: (e) => <span className="flex items-center gap-2 capitalize"><span className="flex h-7 w-7 items-center justify-center rounded bg-icon-container text-icon-blue"><InventoryIcon name="history" className="h-4 w-4" /></span>{e.movementType ?? (e.documentReference.includes("/IN/") ? "receipt" : e.documentReference.includes("/OUT/") ? "delivery" : e.documentReference.includes("/INT/") ? "transfer" : "adjustment")}</span> },
+    { header: "Product", render: (e) => <span className="flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded bg-icon-container text-icon-blue"><InventoryIcon name="package" className="h-4 w-4" /></span>{productMap.get(e.productId)?.name ?? e.productId}</span> },
     {
       header: "Quantity",
       render: (e) => <span className={`font-mono font-medium ${e.quantityChange > 0 ? "text-signal-green" : e.quantityChange < 0 ? "text-signal-red" : "text-steel-500"}`}>{e.quantityChange > 0 ? "+" : ""}{e.quantityChange}</span>,
@@ -81,7 +82,7 @@ export default function MoveHistory() {
         </Card>
       </div>
 
-      <DetailDrawer open={!!selectedEntry} title={selectedEntry ? selectedEntry.documentReference : "Movement details"} onClose={() => setSelectedEntryId(null)}>
+      <DetailDrawer open={!!selectedEntry} title={selectedEntry ? selectedEntry.documentReference : "Movement details"} icon={<InventoryIcon name="history" className="h-8 w-8" />} onClose={() => setSelectedEntryId(null)}>
         {selectedEntry && (
           <div className="space-y-4 text-sm">
             <div className="rounded-xl bg-steel-50 p-3">

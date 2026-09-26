@@ -1,6 +1,4 @@
-// Authentication: sign up, log in, OTP-based password reset. In mock mode
-// any well-formed credentials succeed and a fixed demo OTP (123456) is
-// accepted, so the whole flow is demo-able with no backend running.
+// Authentication and email verification use the real API outside explicit mock mode.
 
 import { apiClient, USE_MOCKS, mockDelay, ApiError } from "./apiClient";
 import { currentUser } from "./mockData";
@@ -29,21 +27,21 @@ export async function login(email: string, password: string): Promise<{ user: Us
   return result;
 }
 
-export async function signup(name: string, email: string, password: string): Promise<{ user: User; token: string }> {
+export async function signup(name: string, email: string, password: string): Promise<void> {
   if (USE_MOCKS) {
-    const token = "mock-jwt-token";
-    localStorage.setItem(TOKEN_KEY, token);
-    const initials = name
-      .split(" ")
-      .map((p) => p[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-    return mockDelay({ user: { ...currentUser, name, email, avatarInitials: initials }, token }, 500);
+    throw new ApiError("Email verification requires the StockSense backend and configured SMTP.", 503);
   }
-  const result = await apiClient.post<{ user: User; token: string }>("/auth/signup", { name, email, password });
-  localStorage.setItem(TOKEN_KEY, result.token);
-  return result;
+  await apiClient.post("/auth/signup", { name, email, password });
+}
+
+export async function resendVerification(email: string): Promise<{ status?: string }> {
+  if (USE_MOCKS) throw new ApiError("Email verification requires the StockSense backend and configured SMTP.", 503);
+  return apiClient.post<{ status?: string }>("/auth/resend-verification", { email });
+}
+
+export async function verifyEmail(token: string): Promise<{ status: "verified" | "already_verified" }> {
+  if (USE_MOCKS) throw new ApiError("Email verification requires the StockSense backend.", 503);
+  return apiClient.post<{ status: "verified" | "already_verified" }>("/auth/verify-email", { token });
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {

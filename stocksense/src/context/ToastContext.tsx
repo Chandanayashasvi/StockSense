@@ -14,9 +14,9 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 const KIND_STYLES: Record<ToastKind, string> = {
-  success: "bg-ink-900 border-signal-green/40",
-  error: "bg-ink-900 border-signal-red/40",
-  info: "bg-ink-900 border-steel-400/40",
+  success: "bg-steel-100 border-signal-green/40",
+  error: "bg-steel-100 border-signal-red/40",
+  info: "bg-steel-100 border-steel-400/40",
 };
 
 const KIND_DOT: Record<ToastKind, string> = {

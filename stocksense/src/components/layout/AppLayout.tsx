@@ -9,7 +9,7 @@ export default function AppShell({ title, children }: { title: string; children:
   return (
     <div className="min-h-screen bg-steel-50">
       <Sidebar />
-      <div className="md:pl-60 flex flex-col min-h-screen">
+      <div className="md:pl-60 flex flex-col min-h-screen bg-steel-50">
         <Topbar title={title} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>

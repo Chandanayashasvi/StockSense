@@ -11,6 +11,7 @@ import Spinner from "@/components/ui/Spinner";
 import ErrorState from "@/components/ui/ErrorState";
 import EmptyState from "@/components/ui/EmptyState";
 import { StatusBadge } from "@/components/ui/Badge";
+import InventoryIcon, { InventoryIconName } from "@/components/ui/InventoryIcon";
 import DocumentFormModal from "./DocumentFormModal";
 import { useAsync } from "@/hooks/useAsync";
 import { fetchDocuments, fetchWarehouses, validateDocument } from "@/services/operationsService";
@@ -33,6 +34,13 @@ const VALIDATE_LABEL: Record<OperationType, string> = {
   delivery: "Deliver",
   transfer: "Complete transfer",
   adjustment: "Apply",
+};
+
+const OPERATION_ICONS: Record<OperationType, InventoryIconName> = {
+  receipt: "packageIn",
+  delivery: "truck",
+  transfer: "transfer",
+  adjustment: "adjustment",
 };
 
 export default function OperationsListPage({ type, title, description, emptyTitle, emptyDescription, newLabel }: OperationsListPageProps) {
@@ -83,12 +91,9 @@ export default function OperationsListPage({ type, title, description, emptyTitl
     {
       header: "Products",
       render: (d) => (
-        <span className="text-steel-600">
-          {d.lines
-            .slice(0, 2)
-            .map((l) => productMap.get(l.productId)?.name ?? l.productId)
-            .join(", ")}
-          {d.lines.length > 2 ? ` +${d.lines.length - 2} more` : ""}
+          <span className="flex items-center gap-2 text-steel-600">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-icon-container text-icon-blue"><InventoryIcon name="package" className="h-4 w-4" /></span>
+            <span>{d.lines.slice(0, 2).map((line) => productMap.get(line.productId)?.name ?? line.productId).join(", ")}{d.lines.length > 2 ? ` +${d.lines.length - 2} more` : ""}</span>
         </span>
       ),
     },
@@ -142,7 +147,7 @@ export default function OperationsListPage({ type, title, description, emptyTitl
         </Card>
       </div>
 
-      <DetailDrawer open={!!selectedDoc} title={selectedDoc?.reference ?? "Operation details"} onClose={() => setSelectedDocId(null)}>
+      <DetailDrawer open={!!selectedDoc} title={selectedDoc?.reference ?? "Operation details"} icon={<InventoryIcon name={OPERATION_ICONS[type]} className="h-8 w-8" />} onClose={() => setSelectedDocId(null)}>
         {selectedDoc && (
           <div className="space-y-4 text-sm">
             <div className="rounded-xl bg-steel-50 p-3">

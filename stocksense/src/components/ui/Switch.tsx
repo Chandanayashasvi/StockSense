@@ -21,7 +21,7 @@ export function Switch({
         role="switch"
         aria-checked={checked}
         aria-labelledby={labelId}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 ${checked ? "bg-ink-900" : "bg-steel-300"}`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 ${checked ? "bg-brand-500" : "bg-steel-300"}`}
         onClick={() => onChange(!checked)}
       >
         <span

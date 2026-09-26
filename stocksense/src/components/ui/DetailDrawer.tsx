@@ -6,11 +6,13 @@ export default function DetailDrawer({
   title,
   onClose,
   children,
+  icon,
 }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  icon?: React.ReactNode;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -62,7 +64,10 @@ export default function DetailDrawer({
             </svg>
           </button>
         </div>
-        <div className="space-y-5 p-5">{children}</div>
+        <div className="space-y-5 p-5">
+          {icon && <div className="flex justify-center"><div className="flex h-16 w-16 items-center justify-center rounded-lg bg-icon-container text-icon-blue">{icon}</div></div>}
+          {children}
+        </div>
       </div>
     </div>,
     document.body
